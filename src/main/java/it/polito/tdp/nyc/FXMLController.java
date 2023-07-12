@@ -1,8 +1,13 @@
 package it.polito.tdp.nyc;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.nyc.model.Arco;
 import it.polito.tdp.nyc.model.Model;
+import it.polito.tdp.nyc.model.NTA;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -41,7 +46,7 @@ public class FXMLController {
     private TableColumn<?, ?> clV2; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbBorough"
-    private ComboBox<?> cmbBorough; // Value injected by FXMLLoader
+    private ComboBox<String> cmbBorough; // Value injected by FXMLLoader
 
     @FXML // fx:id="tblArchi"
     private TableView<?> tblArchi; // Value injected by FXMLLoader
@@ -58,17 +63,39 @@ public class FXMLController {
     @FXML
     void doAnalisiArchi(ActionEvent event) {
     	
-
+    	List<Arco> archi = model.analisiArchi();
+    	for(Arco a : archi) {
+    		txtResult.appendText(a+"\n");
+    	}
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	String borough = cmbBorough.getValue();
+    	
+    	if(borough==null) {
+    		txtResult.appendText("Seleziona una voce");
+    		return;
+    	} else {
+    		model.creaGrafo(borough);
+    		txtResult.appendText("Grafo creato correttamente\n");
+    	}
     	
     }
 
     @FXML
     void doSimula(ActionEvent event) {
 
+    	double prob = Double.parseDouble(txtProb.getText());
+    	int duration = Integer.parseInt(txtDurata.getText());
+    	
+    	Map<NTA, Integer> condivisioni = model.simula(prob, duration);
+    	
+    	for(NTA nta : condivisioni.keySet()) {
+    		txtResult.appendText(nta.getNTACode()+" "+condivisioni.get(nta)+"\n");
+    	}
+    	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -90,6 +117,11 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	
+    	//poichè devo chiamare il modello per avere la mia funzione
+    	List<String> boroughs = model.getBoroughs();
+    	cmbBorough.getItems().addAll(boroughs);
+    	
     }
 
 }
